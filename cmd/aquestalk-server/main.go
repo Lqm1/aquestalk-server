@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/c7e715d1b04b17683718fb1e8944cc28/aquestalk-server/internal/aquestalk"
+	"github.com/c7e715d1b04b17683718fb1e8944cc28/aquestalk-server/pkg/aquestalk"
 )
 
 func main() {
