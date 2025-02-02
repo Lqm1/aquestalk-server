@@ -2,36 +2,122 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 
 	"github.com/c7e715d1b04b17683718fb1e8944cc28/aquestalk-server/pkg/aquestalk"
+	"github.com/gin-gonic/gin"
 )
 
+// 許可されるvoiceのリスト
+var allowedVoices = map[string]bool{
+	"dvd":  true,
+	"f1":   true,
+	"f2":   true,
+	"imd1": true,
+	"jgr":  true,
+	"m1":   true,
+	"m2":   true,
+	"r1":   true,
+}
+
+type SpeechRequest struct {
+	Model          string  `json:"model" binding:"required"`
+	Input          string  `json:"input" binding:"required"`
+	Voice          string  `json:"voice" binding:"required"`
+	ResponseFormat string  `json:"response_format,omitempty"`
+	Speed          float64 `json:"speed,omitempty"`
+}
+
 func main() {
-	// 話者とベースディレクトリの指定
-	voice := "f1"                   // 切り替え可能: m1, f2, etc.
-	baseDir, _ := filepath.Abs(".") // プロジェクトルートを想定
+	r := gin.Default()
 
-	aq, err := aquestalk.New(voice, baseDir)
-	if err != nil {
-		fmt.Printf("Initialization failed: %v\n", err)
-		os.Exit(1)
+	// ベースディレクトリの取得
+	baseDir, _ := filepath.Abs(".")
+
+	r.POST("/v1/audio/speech", func(c *gin.Context) {
+		var req SpeechRequest
+		if err := c.ShouldBindJSON(&req); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		// モデルのチェック
+		if req.Model != "tts-1" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "only 'tts-1' model is supported",
+			})
+			return
+		}
+
+		// レスポンスフォーマットのチェック
+		if req.ResponseFormat != "" && req.ResponseFormat != "wav" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "'response_format' must be 'wav'",
+			})
+			return
+		}
+
+		// Voiceのチェック
+		if !allowedVoices[req.Voice] {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid voice specified",
+			})
+			return
+		}
+
+		// 入力テキストの長さチェック
+		if len(req.Input) == 0 || len(req.Input) > 4096 {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "input must be between 1 and 4096 characters",
+			})
+			return
+		}
+
+		// Speedのチェック
+		if req.Speed != 0 && (req.Speed < 0.5 || req.Speed > 3.0) {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "speed must be between 0.5 and 3.0",
+			})
+			return
+		}
+
+		// デフォルト速度設定
+		speed := 1.0
+		if req.Speed != 0 {
+			speed = req.Speed
+		}
+
+		// AquesTalkの初期化
+		aq, err := aquestalk.New(req.Voice, baseDir)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": fmt.Sprintf("aquestalk init failed: %v", err),
+			})
+			return
+		}
+		defer aq.Close()
+
+		// 速度を100倍して整数に変換（1.0 → 100, 2.0 → 200）
+		speedParam := int(speed * 100)
+
+		// 音声合成
+		wav, err := aq.Synthe(req.Input, speedParam)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": fmt.Sprintf("synthesis failed: %v", err),
+			})
+			return
+		}
+
+		// 音声データを返却
+		c.Data(http.StatusOK, "audio/wav", wav)
+	})
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
-	defer aq.Close()
-
-	// 音声合成の実行
-	wav, err := aq.Synthe("こんにちわ。", 100)
-	if err != nil {
-		fmt.Printf("Synthesis error: %v\n", err)
-		os.Exit(1)
-	}
-
-	// ファイル保存
-	if err := os.WriteFile("output.wav", wav, 0644); err != nil {
-		fmt.Printf("File write error: %v\n", err)
-		os.Exit(1)
-	}
-
-	fmt.Println("Successfully generated output.wav")
+	r.Run(":" + port)
 }
