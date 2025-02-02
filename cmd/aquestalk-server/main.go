@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"path/filepath"
 
 	"github.com/c7e715d1b04b17683718fb1e8944cc28/aquestalk-server/pkg/aquestalk"
 	"github.com/gin-gonic/gin"
@@ -32,9 +31,6 @@ type SpeechRequest struct {
 
 func main() {
 	r := gin.Default()
-
-	// ベースディレクトリの取得
-	baseDir, _ := filepath.Abs(".")
 
 	r.POST("/v1/audio/speech", func(c *gin.Context) {
 		var req SpeechRequest
@@ -90,7 +86,7 @@ func main() {
 		}
 
 		// AquesTalkの初期化
-		aq, err := aquestalk.New(req.Voice, baseDir)
+		aq, err := aquestalk.New(req.Voice)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": fmt.Sprintf("aquestalk init failed: %v", err),
