@@ -4,7 +4,7 @@
 ifeq ($(OS),Windows_NT)
     BUILD_SCRIPT = scripts\build.bat
 else
-    BUILD_SCRIPT = scripts\build.sh
+    BUILD_SCRIPT = scripts/build.sh
 endif
 
 # デフォルトのターゲット
