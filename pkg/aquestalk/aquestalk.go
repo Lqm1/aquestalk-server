@@ -13,7 +13,7 @@ import (
 
 // DLLを埋め込むための設定（プロジェクトのディレクトリ構造に合わせて調整）
 //
-//go:embed bin/*/AquesTalk.dll
+//go:embed bin\*\AquesTalk.dll
 var dllFS embed.FS
 
 type AquesTalk struct {
