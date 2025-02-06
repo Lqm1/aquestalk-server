@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/c7e715d1b04b17683718fb1e8944cc28/aquestalk-server/pkg/aquestalk"
+	"github.com/Lqm1/aquestalk-server/pkg/aquestalk"
 	"github.com/gin-gonic/gin"
 )
 

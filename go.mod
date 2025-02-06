@@ -1,4 +1,4 @@
-module github.com/c7e715d1b04b17683718fb1e8944cc28/aquestalk-server
+module github.com/Lqm1/aquestalk-server
 
 go 1.23.5
 
