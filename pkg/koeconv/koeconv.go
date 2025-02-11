@@ -2,15 +2,24 @@ package koeconv
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"unicode"
 
-	"golang.org/x/exp/slices"
 	"golang.org/x/text/unicode/norm"
 
 	"github.com/ikawaha/kagome-dict/uni"
 	"github.com/ikawaha/kagome/v2/tokenizer"
 )
+
+func ContainsAny(s string, substrs []string) bool {
+	for _, substr := range substrs {
+		if strings.Contains(s, substr) {
+			return true
+		}
+	}
+	return false
+}
 
 func TokensToTokenDatas(tokens []tokenizer.Token) []tokenizer.TokenData {
 	var result []tokenizer.TokenData
@@ -189,10 +198,20 @@ func (k *KoeConv) Convert(input string) (string, error) {
 		if tokenData.Pronunciation != "" {
 			result = append(result, []rune(tokenData.Pronunciation)...)
 		} else {
-			if slices.Contains(ALLOW_SYMBOL, tokenData.Surface) {
-				result = append(result, runes[tokenData.Start:tokenData.End]...)
+			if ContainsAny(tokenData.Surface, ALLOW_SYMBOL) {
+				for _, r := range runes[tokenData.Start:tokenData.End] {
+					if slices.Contains(ALLOW_SYMBOL, string(r)) {
+						result = append(result, r)
+					} else {
+						if !(len(result) > 0 && result[len(result)-1] == []rune("、")[0]) {
+							result = append(result, []rune("、")...)
+						}
+					}
+				}
 			} else {
-				result = append(result, []rune("、")...)
+				if !(len(result) > 0 && result[len(result)-1] == []rune("、")[0]) {
+					result = append(result, []rune("、")...)
+				}
 			}
 		}
 		lastIndex = tokenData.End
@@ -201,6 +220,5 @@ func (k *KoeConv) Convert(input string) (string, error) {
 	result = append(result, runes[lastIndex:]...)
 
 	koe := string(result)
-	fmt.Println(koe)
 	return koe, nil
 }
