@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/Lqm1/aquestalk-server/pkg/aquestalk"
+	"github.com/Lqm1/aquestalk-server/pkg/koeconv"
 	"github.com/gin-gonic/gin"
 )
 
@@ -80,12 +81,6 @@ func main() {
 			return
 		}
 
-		// デフォルト速度設定
-		speed := 1.0
-		if req.Speed != 0 {
-			speed = req.Speed
-		}
-
 		// AquesTalkの初期化
 		aq, err := aquestalk.New(req.Voice)
 		if err != nil {
@@ -96,11 +91,32 @@ func main() {
 		}
 		defer aq.Close()
 
+		// KoeConvの初期化
+		k, err := koeconv.New()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": fmt.Sprintf("koeconv init failed: %v", err),
+			})
+			return
+		}
+
+		// 入力テキストをひらがなに変換
+		koe, err := k.Convert(req.Input)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": fmt.Sprintf("koeconv failed: %v", err),
+			})
+			return
+		}
+
 		// 速度を100倍して整数に変換（1.0 → 100, 2.0 → 200）
-		speedParam := int(speed * 100)
+		speed := 100
+		if req.Speed != 0 {
+			speed = int(req.Speed * 100)
+		}
 
 		// 音声合成
-		wav, err := aq.Synthe(req.Input, speedParam)
+		wav, err := aq.Synthe(koe, speed)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": fmt.Sprintf("synthesis failed: %v", err),
