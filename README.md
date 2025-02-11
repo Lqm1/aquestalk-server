@@ -84,9 +84,7 @@ response = client.audio.speech.create(
 )
 ```
 
-<audio controls>
-  <source src="example.wav" type="audio/wav">
-</audio>
+[合成サンプルを聴く](sample.wav?raw=true)
 
 ## 免責事項
 
