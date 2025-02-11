@@ -2,6 +2,7 @@ package koeconv
 
 import (
 	"fmt"
+	"strings"
 	"unicode"
 
 	"golang.org/x/exp/slices"
@@ -68,29 +69,57 @@ func ApplyAquesTalkTags(tokens []tokenizer.TokenData) []tokenizer.TokenData {
 	tokens = numkResult
 
 	// 英数読みタグ
-	ALLOW_SYMBOL := []string{
-		"!",
-		"#",
-		"$",
-		"%",
-		"&",
-		"*",
-		"+",
-		",",
-		"-",
-		".",
-		"/",
-		":",
-		";",
-		"<",
-		"=",
-		">",
-		"?",
-		"@",
-		"¥",
-		"^",
-		"_",
-		" ",
+	SYMBOL_TO_KANA := map[string]string{
+		"!": "ビック'リ",
+		"#": "シャ'ープ",
+		"$": "ド'ル",
+		"%": "パーセ'ント",
+		"&": "アンド",
+		"*": "ア'スタ",
+		"+": "プラス",
+		",": "カ'ンマ",
+		"-": "ハ'イフン",
+		".": "ドット",
+		"/": "スラ'ッシュ",
+		":": "コ'ロン",
+		";": "セミコ'ロン",
+		"<": "ショ'ーナリ",
+		"=": "イコ'ール",
+		">": "ダ'イナリ",
+		"?": "ハ'テナ",
+		"@": "ア'ット",
+		"¥": "エ'ン",
+		"^": "ハ'ット",
+		"_": "ア'ンダー",
+		" ": "、",
+	}
+	LETTER_TO_KANA := map[string]string{
+		"a": "エー",
+		"b": "ビー",
+		"c": "シー",
+		"d": "ディー",
+		"e": "イー",
+		"f": "エフ",
+		"g": "ジー",
+		"h": "エイチ",
+		"i": "アイ",
+		"j": "ジェイ",
+		"k": "ケー",
+		"l": "エル",
+		"m": "エム",
+		"n": "エヌ",
+		"o": "オー",
+		"p": "ピー",
+		"q": "キュー",
+		"r": "アール",
+		"s": "エス",
+		"t": "ティー",
+		"u": "ユー",
+		"v": "ブイ",
+		"w": "ダブリュー",
+		"x": "エックス",
+		"y": "ワイ",
+		"z": "ゼット",
 	}
 	var alphaResult []tokenizer.TokenData
 	i = 0
@@ -99,16 +128,22 @@ func ApplyAquesTalkTags(tokens []tokenizer.TokenData) []tokenizer.TokenData {
 		if IsLetter(current.Surface) && current.Pronunciation == "" {
 			alphaStr := current.Surface
 			j := i + 1
-			for j < len(tokens) && (IsLetter(tokens[j].Surface) || slices.Contains(ALLOW_SYMBOL, tokens[j].Surface)) {
+			for j < len(tokens) && (IsLetter(tokens[j].Surface)) {
 				alphaStr += tokens[j].Surface
 				j++
 			}
 			alphaStr = norm.NFKC.String(alphaStr)
+			alphaStr = strings.ToLower(alphaStr)
+			newAlphaStr := ""
+			for _, r := range alphaStr {
+				newAlphaStr += LETTER_TO_KANA[string(r)]
+				newAlphaStr += SYMBOL_TO_KANA[string(r)]
+			}
 			newToken := current
 			newToken.Start = current.Start
 			newToken.End = tokens[j-1].End
 			newToken.Surface = alphaStr
-			newToken.Pronunciation = fmt.Sprintf("<ALPHA VAL=\"%s\">", alphaStr)
+			newToken.Pronunciation = newAlphaStr
 			alphaResult = append(alphaResult, newToken)
 			i = j
 		} else {
@@ -154,8 +189,10 @@ func (k *KoeConv) Convert(input string) (string, error) {
 		if tokenData.Pronunciation != "" {
 			result = append(result, []rune(tokenData.Pronunciation)...)
 		} else {
-			if !slices.Contains(ALLOW_SYMBOL, tokenData.Surface) {
-				result = append(result, []rune(tokenData.Surface)...)
+			if slices.Contains(ALLOW_SYMBOL, tokenData.Surface) {
+				result = append(result, runes[tokenData.Start:tokenData.End]...)
+			} else {
+				result = append(result, []rune("、")...)
 			}
 		}
 		lastIndex = tokenData.End
