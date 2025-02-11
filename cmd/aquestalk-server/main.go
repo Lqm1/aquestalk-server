@@ -31,6 +31,7 @@ type SpeechRequest struct {
 
 func main() {
 	r := gin.Default()
+	r.TrustedPlatform = gin.PlatformCloudflare
 
 	r.POST("/v1/audio/speech", func(c *gin.Context) {
 		var req SpeechRequest
