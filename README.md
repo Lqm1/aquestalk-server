@@ -84,8 +84,6 @@ response = client.audio.speech.create(
 )
 ```
 
-[合成サンプルを聴く](sample.wav?raw=true)
-
 ## 免責事項
 
 - 本プロジェクトは、AquesTalkのライセンスに基づき、Windowsプラットフォームでのみ使用可能です。他のプラットフォームで使用した場合、ライセンス違反となり、その責任はユーザーにあります。
