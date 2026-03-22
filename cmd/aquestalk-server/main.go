@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/Lqm1/aquestalk-server/pkg/aqkanji2koe"
 	"github.com/Lqm1/aquestalk-server/pkg/aquestalk"
-	"github.com/Lqm1/aquestalk-server/pkg/koeconv"
 	"github.com/gin-gonic/gin"
 )
 
@@ -91,20 +91,21 @@ func main() {
 		}
 		defer aq.Close()
 
-		// KoeConvの初期化
-		k, err := koeconv.New()
+		// AqKanji2Koeの初期化
+		ak, err := aqkanji2koe.New()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": fmt.Sprintf("koeconv init failed: %v", err),
+				"error": fmt.Sprintf("aqkanji2koe init failed: %v", err),
 			})
 			return
 		}
+		defer ak.Close()
 
-		// 入力テキストをひらがなに変換
-		koe, err := k.Convert(req.Input)
+		// 入力テキストをかな音声記号列に変換
+		koe, err := ak.Convert(req.Input)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": fmt.Sprintf("koeconv failed: %v", err),
+				"error": fmt.Sprintf("convert failed: %v", err),
 			})
 			return
 		}
