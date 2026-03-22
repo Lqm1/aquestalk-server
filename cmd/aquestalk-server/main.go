@@ -23,11 +23,13 @@ var allowedVoices = map[string]bool{
 }
 
 type SpeechRequest struct {
-	Model          string  `json:"model" binding:"required"`
 	Input          string  `json:"input" binding:"required"`
+	Model          string  `json:"model" binding:"required"`
 	Voice          string  `json:"voice" binding:"required"`
+	Instructions   string  `json:"instructions,omitempty"`
 	ResponseFormat string  `json:"response_format,omitempty"`
 	Speed          float64 `json:"speed,omitempty"`
+	StreamFormat   string  `json:"stream_format,omitempty"`
 }
 
 func main() {
@@ -41,18 +43,18 @@ func main() {
 			return
 		}
 
-		// モデルのチェック
-		if req.Model != "tts-1" {
+		// 入力テキストの長さチェック
+		if len(req.Input) == 0 || len(req.Input) > 4096 {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "only 'tts-1' model is supported",
+				"error": "input must be between 1 and 4096 characters",
 			})
 			return
 		}
 
-		// レスポンスフォーマットのチェック
-		if req.ResponseFormat != "" && req.ResponseFormat != "wav" {
+		// モデルのチェック
+		if req.Model != "aquestalk" {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "'response_format' must be 'wav'",
+				"error": "only 'aquestalk' model is supported",
 			})
 			return
 		}
@@ -65,10 +67,10 @@ func main() {
 			return
 		}
 
-		// 入力テキストの長さチェック
-		if len(req.Input) == 0 || len(req.Input) > 4096 {
+		// レスポンスフォーマットのチェック
+		if req.ResponseFormat != "" && req.ResponseFormat != "wav" {
 			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "input must be between 1 and 4096 characters",
+				"error": "'response_format' must be 'wav'",
 			})
 			return
 		}
@@ -77,6 +79,14 @@ func main() {
 		if req.Speed != 0 && (req.Speed < 0.5 || req.Speed > 3.0) {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "speed must be between 0.5 and 3.0",
+			})
+			return
+		}
+
+		// StreamFormatのチェック
+		if req.StreamFormat != "" && req.StreamFormat != "audio" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "'stream_format' must be 'audio'",
 			})
 			return
 		}
