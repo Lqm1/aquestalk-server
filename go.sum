@@ -29,14 +29,6 @@ github.com/goccy/go-json v0.10.2/go.mod h1:6MelG93GURQebXPDq3khkgXZkazVtN9CRI+MG
 github.com/google/go-cmp v0.6.0 h1:ofyhxvXcZhMsU5ulbFiLKl/XBFqE1GSq7atu8tAmTRI=
 github.com/google/go-cmp v0.6.0/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
-github.com/ikawaha/kagome-dict v1.1.0 h1:ePU16KkyonhYLo4YDf/UExmZJBhY/6C946T1SOg1TI4=
-github.com/ikawaha/kagome-dict v1.1.0/go.mod h1:tcbTxQQll5voEBnJqGYt2zJuCouUL6buAOrpSxzo9Fg=
-github.com/ikawaha/kagome-dict/ipa v1.2.0 h1:lgehXOf2USDkBwGPEBD9sbbOBk3WlkhZ2zejPSLjIJA=
-github.com/ikawaha/kagome-dict/ipa v1.2.0/go.mod h1:LRtB3BXipG3Iu4V+KI/E1E7r9GMa79WgAH6IAW4wy6A=
-github.com/ikawaha/kagome-dict/uni v1.2.0 h1:BMv15D69ngwD0Yqc3QiniAYpYAQ+IRDvBGTk/Jqj8dw=
-github.com/ikawaha/kagome-dict/uni v1.2.0/go.mod h1:wHaaFLLTKRJVGzElVED9RiMABZ8GSsaaJ7Tn3wzNon4=
-github.com/ikawaha/kagome/v2 v2.10.0 h1:gObyHxSPVudvHXHQecyVAv3DohIifx9MtA8ErXlx+1g=
-github.com/ikawaha/kagome/v2 v2.10.0/go.mod h1:IEyFbC0oCkMMaIvTAU3O4IrM5mK0AyWJwM41Tb4u77U=
 github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnrnM=
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
 github.com/klauspost/cpuid/v2 v2.0.9/go.mod h1:FInQzS24/EEf25PyTYn52gqo7WaD8xa0213Md/qVLRg=
