@@ -52,12 +52,12 @@ func main() {
 		}
 
 		// Modelのチェック
-		if req.Model != "aquestalk" {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "only 'aquestalk' model is supported",
-			})
-			return
-		}
+		// if req.Model != "aquestalk" {
+		// 	c.JSON(http.StatusBadRequest, gin.H{
+		// 		"error": "only 'aquestalk' model is supported",
+		// 	})
+		// 	return
+		// }
 
 		// Voiceのチェック
 		if !allowedVoices[req.Voice] {
