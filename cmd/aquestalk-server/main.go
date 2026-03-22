@@ -43,7 +43,7 @@ func main() {
 			return
 		}
 
-		// 入力テキストの長さチェック
+		// Inputのチェック
 		if len(req.Input) == 0 || len(req.Input) > 4096 {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "input must be between 1 and 4096 characters",
@@ -51,7 +51,7 @@ func main() {
 			return
 		}
 
-		// モデルのチェック
+		// Modelのチェック
 		if req.Model != "aquestalk" {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "only 'aquestalk' model is supported",
@@ -67,7 +67,7 @@ func main() {
 			return
 		}
 
-		// レスポンスフォーマットのチェック
+		// ResponseFormatのチェック
 		if req.ResponseFormat != "" && req.ResponseFormat != "wav" {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "'response_format' must be 'wav'",
