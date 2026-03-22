@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"sync"
 
 	"github.com/Lqm1/aquestalk-server/pkg/aqkanji2koe"
 	"github.com/Lqm1/aquestalk-server/pkg/aquestalk"
@@ -33,6 +35,29 @@ type SpeechRequest struct {
 }
 
 func main() {
+	// AqKanji2Koeの初期化（起動時に1回だけ）
+	ak, err := aqkanji2koe.New()
+	if err != nil {
+		log.Fatalf("aqkanji2koe init failed: %v", err)
+	}
+	defer ak.Close()
+	var akMu sync.Mutex
+
+	// AquesTalkの全voice初期化（起動時に1回だけ）
+	aqMap := make(map[string]*aquestalk.AquesTalk)
+	aqMu := make(map[string]*sync.Mutex)
+	for voice := range allowedVoices {
+		aq, err := aquestalk.New(voice)
+		if err != nil {
+			log.Fatalf("aquestalk init failed for voice %s: %v", voice, err)
+		}
+		defer aq.Close()
+		aqMap[voice] = aq
+		aqMu[voice] = &sync.Mutex{}
+	}
+
+	log.Println("All engines initialized")
+
 	r := gin.Default()
 	r.TrustedPlatform = gin.PlatformCloudflare
 
@@ -91,28 +116,10 @@ func main() {
 			return
 		}
 
-		// AquesTalkの初期化
-		aq, err := aquestalk.New(req.Voice)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": fmt.Sprintf("aquestalk init failed: %v", err),
-			})
-			return
-		}
-		defer aq.Close()
-
-		// AqKanji2Koeの初期化
-		ak, err := aqkanji2koe.New()
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error": fmt.Sprintf("aqkanji2koe init failed: %v", err),
-			})
-			return
-		}
-		defer ak.Close()
-
 		// 入力テキストをかな音声記号列に変換
+		akMu.Lock()
 		koe, err := ak.Convert(req.Input)
+		akMu.Unlock()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": fmt.Sprintf("convert failed: %v", err),
@@ -127,7 +134,11 @@ func main() {
 		}
 
 		// 音声合成
+		aq := aqMap[req.Voice]
+		mu := aqMu[req.Voice]
+		mu.Lock()
 		wav, err := aq.Synthe(koe, speed)
+		mu.Unlock()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": fmt.Sprintf("synthesis failed: %v", err),
