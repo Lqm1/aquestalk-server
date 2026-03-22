@@ -38,7 +38,7 @@ func main() {
 	// AqKanji2Koeの初期化（起動時に1回だけ）
 	ak, err := aqkanji2koe.New()
 	if err != nil {
-		log.Fatalf("aqkanji2koe init failed: %v", err)
+		log.Fatalf("AqKanji2Koe init failed: %v", err)
 	}
 	defer ak.Close()
 	var akMu sync.Mutex
@@ -49,7 +49,7 @@ func main() {
 	for voice := range allowedVoices {
 		aq, err := aquestalk.New(voice)
 		if err != nil {
-			log.Fatalf("aquestalk init failed for voice %s: %v", voice, err)
+			log.Fatalf("AquesTalk init failed for voice %s: %v", voice, err)
 		}
 		defer aq.Close()
 		aqMap[voice] = aq
